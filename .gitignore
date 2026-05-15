@@ -1,0 +1,46 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.o
+*.a
+*.elf
+*.bin
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# WiFi credentials (per-user; copy secrets.h.example to secrets.h and fill in)
+firmware/src/secrets.h
+
+# Local daemon session config (lives in ~/.config/claude-stick anyway,
+# but guard against accidental commits if someone moves it into the repo)
+daemon/session.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Secrets / env
+.env
+.env.*
+*.pem
+*.key

@@ -1,0 +1,5 @@
+# Python dependencies for the claude-stick laptop daemon.
+# Pinned conservatively to avoid surprise API breakage; bump as needed.
+
+bleak>=0.22.0,<0.24.0
+httpx>=0.27.0,<0.29.0

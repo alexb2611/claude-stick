@@ -1,0 +1,21 @@
+[Unit]
+Description=Claude Stick BLE daemon
+Documentation=https://github.com/%u/claude-stick
+After=bluetooth.target network-online.target
+Wants=bluetooth.target network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/Documents/GitHub/claude-stick/daemon/.venv/bin/python %h/Documents/GitHub/claude-stick/daemon/claude_stick_daemon.py
+Restart=always
+RestartSec=10
+
+# Inherit a minimal environment. LOG_LEVEL, POLL_INTERVAL_SEC etc.
+# can be overridden via `systemctl --user edit claude-stick-daemon`.
+Environment=PYTHONUNBUFFERED=1
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
