@@ -1,0 +1,17 @@
+[Unit]
+Description=claude-stick Inky pHAT display service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/claude-stick/pi
+ExecStart=%h/.virtualenvs/pimoroni/bin/python %h/claude-stick/pi/claude_stick_pi.py
+Restart=always
+RestartSec=10
+TimeoutStopSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
