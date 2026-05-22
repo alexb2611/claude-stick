@@ -29,6 +29,13 @@ See `firmware/platformio.ini` for dependencies.
 
 Early development. The current build is a layout-verification stub with hard-coded sample data; BLE, WiFi/NTP, and daemon integration come next.
 
+## Variants
+
+- **M5StickC Plus (original)** — laptop daemon + ESP32 firmware with
+  BLE link. See [`firmware/`](firmware/) and [`daemon/`](daemon/).
+- **Raspberry Pi + Inky pHAT** — single Pi-resident service, no BLE.
+  See [`pi/README.md`](pi/README.md).
+
 ## Repository layout
 
 ```
