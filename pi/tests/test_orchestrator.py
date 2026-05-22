@@ -5,8 +5,6 @@ the Pi via the hardware checklist. Pure decision logic lives in
 `should_redraw()` and can be unit-tested in isolation.
 """
 
-import pytest
-
 from claude_stick_pi import should_redraw
 
 
@@ -42,4 +40,20 @@ def test_different_signature_past_floor_redraws():
     assert should_redraw(
         last_redraw_at=1000, last_signature=("a",),
         signature=("b",), now=1400,    # 400s elapsed, > 300
+    ) is True
+
+
+def test_same_signature_exactly_at_keepalive_redraws():
+    # Boundary: age == MAX_INK_AGE_SEC (3600). Spec says ">=" so this redraws.
+    assert should_redraw(
+        last_redraw_at=1000, last_signature=("a",),
+        signature=("a",), now=4600,
+    ) is True
+
+
+def test_different_signature_exactly_at_floor_redraws():
+    # Boundary: age == MIN_REFRESH_INTERVAL_SEC (300). Spec says ">=" so this redraws.
+    assert should_redraw(
+        last_redraw_at=1000, last_signature=("a",),
+        signature=("b",), now=1300,
     ) is True
