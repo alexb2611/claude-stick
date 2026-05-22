@@ -1,0 +1,5 @@
+pytest>=8.0
+pytest-asyncio>=0.23
+httpx>=0.27,<1.0
+Pillow>=10.0
+font-hanken-grotesk>=0.0.2
