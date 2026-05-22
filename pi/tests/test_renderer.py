@@ -32,7 +32,7 @@ def test_render_returns_palette_mode():
 
 
 @pytest.mark.parametrize("fixture_name", [
-    "default", "first_run", "auth_failed", "high_session",
+    "default", "first_run", "auth_failed", "high_session", "weekly_just_reset",
 ])
 def test_render_matches_golden(fixture_name):
     s = _load_fixture_snapshot(fixture_name)
