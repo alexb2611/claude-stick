@@ -136,6 +136,9 @@ async def poll_usage(*, session_key: str, org_uuid: str,
     try:
         response = await client.get(
             url,
+            # TODO(task-6): httpx ≥0.27 deprecates per-request cookies; the
+            # orchestrator should construct the AsyncClient with this cookie
+            # already attached and remove the cookies= kwarg here.
             cookies={"sessionKey": session_key},
             headers=CLIENT_HEADERS,
             timeout=HTTP_TIMEOUT_SEC,
