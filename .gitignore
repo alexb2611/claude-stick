@@ -39,6 +39,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Brainstorming mockups (visual companion)
+.superpowers/
+
 # Secrets / env
 .env
 .env.*
