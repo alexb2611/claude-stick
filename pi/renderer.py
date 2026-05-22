@@ -8,7 +8,6 @@ just save the PNG.
 from PIL import Image, ImageDraw
 
 from layout import (
-    ACCENT_IDX,
     BADGE_SIZE,
     BADGE_X,
     BAR_BORDER,
@@ -134,10 +133,12 @@ def _draw_badge(draw: ImageDraw.ImageDraw, x: int, y: int, level: Badge) -> None
         char = "·" if level == Badge.OK else "!"
         text_colour = BLACK_IDX
 
-    # Centre the character inside the badge.
-    w, h = _text_size(_FONTS["small"], char)
-    cx = x + (BADGE_SIZE - w) // 2
-    cy = y + (BADGE_SIZE - h) // 2 - 1     # nudge up for typical glyph baseline
+    # Centre the character inside the badge using font metrics.
+    left, top, right, bottom = _FONTS["small"].getbbox(char)
+    w = right - left
+    h = bottom - top
+    cx = x + (BADGE_SIZE - w) // 2 - left
+    cy = y + (BADGE_SIZE - h) // 2 - top
     draw.text((cx, cy), char, font=_FONTS["small"], fill=text_colour)
 
 

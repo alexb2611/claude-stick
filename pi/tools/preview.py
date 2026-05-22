@@ -35,7 +35,8 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", type=Path, default=FIXTURES_DIR / "default.json",
                         help="path to a fixture JSON file")
-    parser.add_argument("--out",  type=Path, default=Path("preview.png"))
+    parser.add_argument("--out",  type=Path, default=Path("preview.png"),
+                        help="output PNG path (default: ./preview.png in cwd)")
     parser.add_argument("--show", action="store_true",
                         help="open the result with xdg-open / open after writing")
     parser.add_argument("--update-golden", action="store_true",
