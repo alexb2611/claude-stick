@@ -179,6 +179,13 @@ def test_snapshot_from_payload_unknown_status_defaults_to_net():
     s = snapshot_from_payload(payload, now=1100)
     assert s.status == Status.NET
 
+def test_snapshot_from_payload_null_ts_does_not_crash():
+    # Defensive: an explicit null `ts` must not raise TypeError.
+    payload = {"s": 42.0, "sr": 2000, "w": 67.0, "wr": 10000,
+               "st": "ok", "ts": None}
+    s = snapshot_from_payload(payload, now=1100)
+    assert s.last_poll_at == 0
+
 
 # ── First-run text rendering ───────────────────────────────────────────
 

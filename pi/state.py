@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 
 import config
 
@@ -33,6 +33,9 @@ class Badge(enum.Enum):
 
 
 # ── Pure helpers ───────────────────────────────────────────────────────
+
+_POLLING_TEXT = "polling..."
+
 
 def format_duration(seconds: int) -> str:
     """
@@ -139,7 +142,7 @@ class Snapshot:
     @property
     def session_reset_text(self) -> str:
         if self.session_reset_at is None:
-            return "polling..."
+            return _POLLING_TEXT
         when = format_reset(self.session_reset_at, self.now)
         dur  = self.session_countdown_text
         return f"resets {when} · {dur}" if dur else f"resets {when}"
@@ -147,7 +150,7 @@ class Snapshot:
     @property
     def weekly_reset_text(self) -> str:
         if self.weekly_reset_at is None:
-            return "polling..."
+            return _POLLING_TEXT
         when = format_reset(self.weekly_reset_at, self.now)
         dur  = self.weekly_countdown_text
         return f"resets {when} · {dur}" if dur else f"resets {when}"
@@ -187,7 +190,7 @@ def snapshot_from_payload(payload: dict, now: int) -> Snapshot:
         session_reset_at = payload.get("sr"),
         weekly_pct       = payload.get("w"),
         weekly_reset_at  = payload.get("wr"),
-        last_poll_at     = int(payload.get("ts", 0)) or 0,
+        last_poll_at     = int(payload.get("ts") or 0),
         status           = _STATUS_BY_WORD.get(payload.get("st", "net"), Status.NET),
         now              = now,
     )
