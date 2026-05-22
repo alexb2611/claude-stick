@@ -98,6 +98,7 @@ async def _poll_with_mock(handler, *, expect_status="ok"):
             client=client,
             now=1748000000,
         )
+    assert payload["st"] == expect_status
     return payload
 
 
@@ -109,7 +110,7 @@ async def test_poll_usage_200_full_response():
             "five_hour": {"utilization": 42.3, "resets_at": "2026-05-22T17:42:00Z"},
             "seven_day": {"utilization": 67.0, "resets_at": "2026-05-26T09:00:00Z"},
         })
-    p = await _poll_with_mock(handler)
+    p = await _poll_with_mock(handler, expect_status="ok")
     assert p["s"] == 42.3 and p["w"] == 67.0
     assert p["st"] == "ok"
 
@@ -117,7 +118,7 @@ async def test_poll_usage_200_full_response():
 async def test_poll_usage_401_sets_auth():
     def handler(req):
         return httpx.Response(401, text="Unauthorized")
-    p = await _poll_with_mock(handler)
+    p = await _poll_with_mock(handler, expect_status="auth")
     assert p["st"] == "auth"
     assert p["s"] is None and p["w"] is None
 
@@ -125,21 +126,32 @@ async def test_poll_usage_401_sets_auth():
 async def test_poll_usage_403_sets_auth():
     def handler(req):
         return httpx.Response(403, text="Forbidden")
-    p = await _poll_with_mock(handler)
+    p = await _poll_with_mock(handler, expect_status="auth")
     assert p["st"] == "auth"
+
+
+async def test_poll_usage_auth_logs_devtools_guidance(caplog):
+    def handler(req):
+        return httpx.Response(401, text="Unauthorized")
+    caplog.set_level("ERROR")
+    p = await _poll_with_mock(handler, expect_status="auth")
+    # Spec §8.2: auth path must log the actionable refresh guidance.
+    combined = " ".join(r.message for r in caplog.records).lower()
+    assert "sessionkey" in combined
+    assert "devtools" in combined
 
 
 async def test_poll_usage_429_sets_rate():
     def handler(req):
         return httpx.Response(429, text="Too many requests")
-    p = await _poll_with_mock(handler)
+    p = await _poll_with_mock(handler, expect_status="rate")
     assert p["st"] == "rate"
 
 
 async def test_poll_usage_500_sets_net():
     def handler(req):
         return httpx.Response(500, text="Server error")
-    p = await _poll_with_mock(handler)
+    p = await _poll_with_mock(handler, expect_status="net")
     assert p["st"] == "net"
 
 
@@ -147,14 +159,14 @@ async def test_poll_usage_cloudflare_html_sets_net():
     def handler(req):
         return httpx.Response(200, text="<html>cloudflare challenge</html>",
                               headers={"content-type": "text/html"})
-    p = await _poll_with_mock(handler)
+    p = await _poll_with_mock(handler, expect_status="net")
     assert p["st"] == "net"
 
 
 async def test_poll_usage_connection_error_sets_net():
     def handler(req):
         raise httpx.ConnectError("DNS failure")
-    p = await _poll_with_mock(handler)
+    p = await _poll_with_mock(handler, expect_status="net")
     assert p["st"] == "net"
 
 
