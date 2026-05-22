@@ -107,7 +107,7 @@ class Service:
             client=client, now=now,
         )
         snapshot = state.snapshot_from_payload(payload, now=now)
-        log.info("poll: s=%s%% w=%s%% st=%s",
+        log.info("poll: s=%s w=%s st=%s",
                  snapshot.session_pct_text, snapshot.weekly_pct_text,
                  snapshot.status_text)
 
