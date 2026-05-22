@@ -160,29 +160,32 @@ async def main() -> int:
         return 1
 
     try:
-        session_key, org_uuid = poller.load_session_config()
-    except (FileNotFoundError, ValueError) as e:
-        log.error("%s", e)
-        return 1
+        try:
+            session_key, org_uuid = poller.load_session_config()
+        except (FileNotFoundError, ValueError) as e:
+            log.error("%s", e)
+            return 1
 
-    try:
-        display = _detect_display()
-    except Exception:
-        log.exception("could not detect Inky display; check SPI and venv")
-        return 1
+        try:
+            display = _detect_display()
+        except Exception:
+            log.exception("could not detect Inky display; check SPI and venv")
+            return 1
 
-    log.info("starting; org %s…, poll every %ds",
-             org_uuid[:8], config.POLL_INTERVAL_SEC)
+        log.info("starting; org %s…, poll every %ds",
+                 org_uuid[:8], config.POLL_INTERVAL_SEC)
 
-    service = Service(session_key, org_uuid, display)
+        service = Service(session_key, org_uuid, display)
 
-    loop = asyncio.get_running_loop()
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(sig, service.stop)
+        loop = asyncio.get_running_loop()
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, service.stop)
 
-    await service.run()
-    log.info("exited cleanly")
-    return 0
+        await service.run()
+        log.info("exited cleanly")
+        return 0
+    finally:
+        os.close(lock_fd)
 
 
 if __name__ == "__main__":
