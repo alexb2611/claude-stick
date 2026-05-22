@@ -72,7 +72,7 @@ FONT_SIZE_SMALL  = 9     # reset countdown + status footer
 def load_fonts() -> dict[str, ImageFont.FreeTypeFont]:
     return {
         "pct":   ImageFont.truetype(_fhg.HankenGroteskBold,    FONT_SIZE_PCT),
-        "label": ImageFont.truetype(_fhg.HankenGroteskMedium,  FONT_SIZE_LABEL),
+        "label": ImageFont.truetype(_fhg.HankenGroteskSemiBold, FONT_SIZE_LABEL),
         "small": ImageFont.truetype(_fhg.HankenGrotesk,        FONT_SIZE_SMALL),
     }
 
