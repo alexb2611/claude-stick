@@ -55,11 +55,14 @@ BAR_W      = 234         # spec §6.1 — 4 px shorter than the full inter-margi
 BAR_H      = 12
 BAR_BORDER = 1
 
-# ── Palette indices (Inky standard) ────────────────────────────────────
+# ── Palette indices (InkyJD79661 native order) ─────────────────────────
+# The 4-colour pHAT (PIM784) uses BLACK=0, WHITE=1, YELLOW=2, RED=3 —
+# note this is inverted from the old black-only pHAT's WHITE=0/BLACK=1.
 
-WHITE_IDX = 0
-BLACK_IDX = 1
-ACCENT_IDX = 2   # unused on the black-only pHAT
+BLACK_IDX  = 0
+WHITE_IDX  = 1
+YELLOW_IDX = 2
+RED_IDX    = 3
 
 # ── Fonts ──────────────────────────────────────────────────────────────
 # `font-hanken-grotesk` exposes TTF paths as module attributes.

@@ -31,6 +31,21 @@ def test_render_returns_palette_mode():
     assert img.mode == "P"
 
 
+def test_render_palette_matches_jd79661_order():
+    """Exactly four pure colours, in the driver's native index order.
+    InkyJD79661.set_image only skips dithering for 4-colour P images,
+    and quantizes against black/white/yellow/red — so both the count
+    and the order are load-bearing."""
+    s = _load_fixture_snapshot("default")
+    img = render(s)
+    assert img.palette.colors == {
+        (0, 0, 0):       0,   # black
+        (255, 255, 255): 1,   # white
+        (255, 255, 0):   2,   # yellow
+        (255, 0, 0):     3,   # red
+    }
+
+
 @pytest.mark.parametrize("fixture_name", [
     "default", "first_run", "auth_failed", "high_session", "weekly_just_reset",
 ])

@@ -19,8 +19,10 @@ from layout import (
     PANEL_H,
     PANEL_W,
     PCT_RIGHT_X,
+    RED_IDX,
     REGIONS,
     WHITE_IDX,
+    YELLOW_IDX,
     assert_fonts_fit,
     load_fonts,
 )
@@ -34,12 +36,22 @@ _FONTS = load_fonts()
 assert_fonts_fit(_FONTS)
 
 
-# Inky's 3-entry palette: index 0=WHITE, 1=BLACK, 2=accent (unused).
+# Exactly four pure colours in InkyJD79661's native index order. Keeping
+# the palette at precisely four entries matters: the driver's set_image
+# sees a 4-colour P-mode image and maps it 1:1 with dithering disabled.
 _PALETTE = [
-    255, 255, 255,  # 0: white
-    0,   0,   0,    # 1: black
-    255, 0,   0,    # 2: accent (placeholder for compatibility)
-] + [0] * (256 * 3 - 9)
+    0,   0,   0,    # 0: black
+    255, 255, 255,  # 1: white
+    255, 255, 0,    # 2: yellow
+    255, 0,   0,    # 3: red
+]
+
+# Utilisation-level colours: badge fill and bar fill share this mapping.
+_LEVEL_FILL = {
+    Badge.OK:   BLACK_IDX,   # bar only; OK badge stays hollow
+    Badge.WARN: YELLOW_IDX,
+    Badge.HIGH: RED_IDX,
+}
 
 
 def render(snapshot: Snapshot) -> Image.Image:
@@ -106,8 +118,8 @@ def _draw_section(draw: ImageDraw.ImageDraw, *,
     badge_y = row_y + (row_h - BADGE_SIZE) // 2
     _draw_badge(draw, BADGE_X, badge_y, badge)
 
-    # Bar (outline + fill)
-    _draw_bar(draw, BAR_X, bar_y, pct_int)
+    # Bar (outline + fill coloured by utilisation level)
+    _draw_bar(draw, BAR_X, bar_y, pct_int, _LEVEL_FILL[badge])
 
     # Reset text
     draw.text((MARGIN_X, reset_y), reset_text,
@@ -116,22 +128,28 @@ def _draw_section(draw: ImageDraw.ImageDraw, *,
 
 def _draw_footer(draw: ImageDraw.ImageDraw, status_text: str) -> None:
     y, _ = REGIONS["status_footer"]
-    draw.text((MARGIN_X, y), f"status: {status_text}",
-              font=_FONTS["small"], fill=BLACK_IDX)
+    prefix = "status: "
+    draw.text((MARGIN_X, y), prefix, font=_FONTS["small"], fill=BLACK_IDX)
+    prefix_w, _ = _text_size(_FONTS["small"], prefix)
+    # Any non-ok pipeline state gets the red word treatment. Yellow is
+    # avoided for text — a 9 px yellow word on white e-paper is unreadable.
+    word_colour = BLACK_IDX if status_text == "ok" else RED_IDX
+    draw.text((MARGIN_X + prefix_w, y), status_text,
+              font=_FONTS["small"], fill=word_colour)
 
 
 def _draw_badge(draw: ImageDraw.ImageDraw, x: int, y: int, level: Badge) -> None:
-    """13×13 box; OK=hollow with dot, WARN=hollow with !, HIGH=solid with white !."""
-    if level == Badge.HIGH:
-        draw.rectangle((x, y, x + BADGE_SIZE - 1, y + BADGE_SIZE - 1),
-                       fill=BLACK_IDX, outline=BLACK_IDX)
-        char = "!"
-        text_colour = WHITE_IDX
-    else:
+    """13×13 box; OK=hollow with dot, WARN=yellow with !, HIGH=red with white !."""
+    if level == Badge.OK:
         draw.rectangle((x, y, x + BADGE_SIZE - 1, y + BADGE_SIZE - 1),
                        fill=WHITE_IDX, outline=BLACK_IDX)
-        char = "·" if level == Badge.OK else "!"
+        char = "·"
         text_colour = BLACK_IDX
+    else:
+        draw.rectangle((x, y, x + BADGE_SIZE - 1, y + BADGE_SIZE - 1),
+                       fill=_LEVEL_FILL[level], outline=BLACK_IDX)
+        char = "!"
+        text_colour = BLACK_IDX if level == Badge.WARN else WHITE_IDX
 
     # Centre the character inside the badge using font metrics.
     left, top, right, bottom = _FONTS["small"].getbbox(char)
@@ -142,7 +160,8 @@ def _draw_badge(draw: ImageDraw.ImageDraw, x: int, y: int, level: Badge) -> None
     draw.text((cx, cy), char, font=_FONTS["small"], fill=text_colour)
 
 
-def _draw_bar(draw: ImageDraw.ImageDraw, x: int, y: int, pct_int: int) -> None:
+def _draw_bar(draw: ImageDraw.ImageDraw, x: int, y: int, pct_int: int,
+              fill_idx: int) -> None:
     # Outer rectangle (border).
     draw.rectangle((x, y, x + BAR_W - 1, y + BAR_H - 1),
                    fill=WHITE_IDX, outline=BLACK_IDX, width=BAR_BORDER)
@@ -154,7 +173,7 @@ def _draw_bar(draw: ImageDraw.ImageDraw, x: int, y: int, pct_int: int) -> None:
     draw.rectangle((x + BAR_BORDER, y + BAR_BORDER,
                     x + BAR_BORDER + fill_w - 1,
                     y + BAR_H - 1 - BAR_BORDER),
-                   fill=BLACK_IDX, outline=BLACK_IDX)
+                   fill=fill_idx, outline=fill_idx)
 
 
 def _text_size(font, text: str) -> tuple[int, int]:

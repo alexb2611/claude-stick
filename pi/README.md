@@ -1,17 +1,39 @@
 # claude-stick: Inky pHAT variant
 
 A Pi-resident port of [claude-stick](../README.md) for hosts running a
-Pimoroni Inky pHAT V2. One Python service polls
+Pimoroni Inky pHAT. One Python service polls
 `https://claude.ai/api/organizations/{org}/usage` every 60 s and renders
 session + weekly utilisation to the 250×122 e-paper panel.
 
 ## Hardware
 
 - Raspberry Pi Zero 2 W (or any Pi with the Inky pHAT footprint)
-- Pimoroni Inky pHAT V2 (`InkyPHAT_SSD1608`, black variant)
+- Pimoroni Inky pHAT 4-colour (PIM784, `InkyJD79661`,
+  black/white/yellow/red)
 - Debian 13 trixie, Python 3.13
 - Pimoroni venv at `~/.virtualenvs/pimoroni/`
   (`curl https://get.pimoroni.com/inky | bash` installs this)
+- `inky>=2.2.0` in that venv — required for the 4-colour pHAT;
+  `install.sh` upgrades it automatically
+
+The display is auto-detected via EEPROM (`inky.auto`), but the renderer
+now emits the 4-colour panel's palette order (black=0, white=1) — the
+older black-only pHAT V2 uses the inverse order and would display an
+inverted image. For that panel, check out a commit before the 4-colour
+migration.
+
+## Colour semantics
+
+Utilisation level drives colour, using the same thresholds as the
+badges (50% warn / 80% high, see `config.py`):
+
+| Level | Bar fill | Badge |
+|---|---|---|
+| < 50% | black | hollow box with dot |
+| 50–79% | yellow | yellow box with `!` |
+| ≥ 80% | red | red box with white `!` |
+
+The status footer word turns red for any non-`ok` pipeline state.
 
 ## Install
 
@@ -46,8 +68,10 @@ your live login.
 
 The service polls every 60 s but redraws the panel only when something
 visibly changes, subject to a 5-minute floor and a 1-hour keep-alive
-ceiling. Defaults are in [`config.py`](config.py); override via env
-vars in the systemd drop-in:
+ceiling. Note the 4-colour panel takes ~20 s per refresh (vs ~1–2 s on
+the old black-only panel) — another reason the floor exists. Defaults
+are in [`config.py`](config.py); override via env vars in the systemd
+drop-in:
 
 ```bash
 systemctl --user edit claude-stick-pi
